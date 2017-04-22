@@ -16,11 +16,20 @@ class MakeDish
     # [OK]showRecipes: 作ったレシピの数と内容をls
     # [OK]makeRecipe: レシピ名を指定して作れるかどうか確認
 
+    # refillItem: itemsを探して数を補充する。
+
     generateSampleItems()
     generateSampleRecipes()
 
     showItems()
     showRecipes()
+    makeRecipe("トマキュー")
+    makeRecipe("トマトキューリ")
+    refillItem("キューリ", 10)
+    refillItem("きゅうり", 10)
+    makeRecipe("トマトキューリ")
+    makeRecipe("トマトキューリ")
+    refillItem("トマト", 1)
     makeRecipe("トマトキューリ")
     print ("\n")
   end
@@ -95,12 +104,19 @@ class MakeDish
         end
       end
       if canCook == true
-        print "🙆  #{recipename} は作れるようです。\n"
+        # 作れるようなら消費
+        print "調理を開始します...\n"
+        presentRecipe.each do |v|
+          idx = findItemIndex(v[0])
+          print "> #{recipename} を作ったので #{v[0]} の数が #{@@items[idx][1]}個 -> #{@@items[idx][1]-v[1]}個 になりました。\n"
+          @@items[idx][1] = @@items[idx][1]-v[1]
+        end
+        print "😁  #{recipename} が作れました。\n"
       else
         print "😨  #{recipename} は作れませんでした。\n"
       end
     else
-      print "レシピ名が存在しません。\n"
+      print "#{recipename} のレシピ名が存在しません。\n"
     end
   end
 
@@ -119,6 +135,17 @@ class MakeDish
       end
     end
     return idx
+  end
+
+  def refillItem(itemname, amount)
+    print "\n====== #{itemname} を補充します ======\n"
+    idx = findItemIndex(itemname)
+    if idx == -1 then
+      print "おや、 #{itemname} は買ったことがないようですよ。\n"
+    else
+      print "#{itemname} を #{amount}個補充して #{@@items[idx][1]}個 -> #{@@items[idx][1]+amount}個 になりました。\n"
+      @@items[idx][1] = @@items[idx][1]+amount
+    end
   end
 
 end
