@@ -16,7 +16,8 @@ class MakeDish
     # [OK]showRecipes: 作ったレシピの数と内容をls
     # [OK]makeRecipe: レシピ名を指定して作れるかどうか確認
 
-    # refillItem: itemsを探して数を補充する。
+    # [OK]refillItem: itemsを探して数を補充する。
+    # crawlRecipes: レシピ全体を探索して何が作れるか確認
 
     generateSampleItems()
     generateSampleRecipes()
@@ -26,11 +27,13 @@ class MakeDish
     makeRecipe("トマキュー")
     makeRecipe("トマトキューリ")
     refillItem("キューリ", 10)
-    refillItem("きゅうり", 10)
+    refillItem("きゅうり", 3)
     makeRecipe("トマトキューリ")
     makeRecipe("トマトキューリ")
-    refillItem("トマト", 1)
+    refillItem("トマト", 5)
     makeRecipe("トマトキューリ")
+    crawlRecipes()
+    makeRecipe("冷やしトマト")
     print ("\n")
   end
 
@@ -65,6 +68,9 @@ class MakeDish
     items.push ["トマト", 3]
     items.push ["きゅうり", 2]
     generateRecipe("トマトキューリ", "トマトとキューリの絶望的なコンビネーション！", items)
+    items = []
+    items.push ["トマト", 1]
+    generateRecipe("冷やしトマト", "きーんと冷えたおいしいトマト", items)
   end
 
   def showRecipes()
@@ -91,7 +97,7 @@ class MakeDish
       end
     end
     if isValidRecipe == true
-      print "お望みのレシピが見つかりました: #{recipename}\n"
+      print "作りたいレシピが見つかりました: #{recipename}\n"
       canCook = true
       print "調理に必要な数を計算します...\n"
       presentRecipe.each do |v|
@@ -112,6 +118,7 @@ class MakeDish
           @@items[idx][1] = @@items[idx][1]-v[1]
         end
         print "😁  #{recipename} が作れました。\n"
+        print "> #{@@recipes[findRecipeIndex(recipename)][0][1]}\n"
       else
         print "😨  #{recipename} は作れませんでした。\n"
       end
@@ -146,6 +153,57 @@ class MakeDish
       print "#{itemname} を #{amount}個補充して #{@@items[idx][1]}個 -> #{@@items[idx][1]+amount}個 になりました。\n"
       @@items[idx][1] = @@items[idx][1]+amount
     end
+  end
+
+  def findRecipeIndex(recipename)
+    idx = -1
+    @@recipes.each_with_index do |v,i|
+      if v[0][0] == recipename then
+        idx = i
+      end
+    end
+    return idx
+  end
+
+  def crawlRecipes()
+    print "\n====== レシピ本を読みながら、何が作れるか確認します ======\n"
+    @@recipes.each_with_index do |v,i|
+      # print "------ recipe:#{format('%02d', i+1)} ------\n"
+      checkRecipe(v[0][0])
+    end
+  end
+
+  def checkRecipe(recipename)
+    isValidRecipe = false
+    presentRecipe = nil
+    @@recipes.each do |v|
+      if recipename == v[0][0] then
+        isValidRecipe = true
+        presentRecipe = v[1]
+      end
+    end
+    if isValidRecipe == true
+      print "🔍  #{recipename}が作れるか確認します...\n"
+      canCook = true
+      # print "調理に必要な数を計算します...\n"
+      presentRecipe.each do |v|
+        # 持ってる数 >= レシピの数
+        if showItemAmount(v[0]) >= v[1] then
+          # print "> #{v[0]}の数は十分です。\n"
+        else
+          canCook = false
+          print "  ❌  #{v[0]}の数が足りません。あと#{v[1]-showItemAmount(v[0])}個用意してください。\n"
+        end
+      end
+      if canCook == true
+        print "  ✅  #{recipename} は作れます。\n"
+        # print "#{@@recipes[idx][0][1]}\n"
+      else
+        # print "❌  #{recipename} は作れません。\n"
+      end
+    else
+    end
+
   end
 
 end
